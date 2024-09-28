@@ -6,6 +6,7 @@ const PORT = process.env.PORT || 4000
 const dbConnect = require('./config/dbconnect.js')
 const authRouter = require('./routes/authRoute.js')
 const bodyParser = require('body-parser')
+const { notFound, errorHandler } = require('./middlewares/errorHandler.js')
 
 dbConnect()
 
@@ -15,7 +16,8 @@ app.use(bodyParser.urlencoded({ extended : false}))
 app.use('/api/user',authRouter)
 
 
-
+app.use(notFound);
+app.use(errorHandler)
 
 
 app.listen(PORT , () => {
