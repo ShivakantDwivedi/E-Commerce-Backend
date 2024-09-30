@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const  User = require('../models/userModel');
 const generateToken = require('../config/jwtToken');
+const validateMongDBId = require('../utils/validateMongdbId')
 
 // create a user
 const createUser = asyncHandler(async(req, res) =>{
@@ -38,9 +39,10 @@ const loginUserCtrl = asyncHandler(async ( req , res) => {
 
 // update a user
 const updateaUser = asyncHandler( async( req , res) => {
-    const {id} = req.params;
+    const {_id} = req.user;
+    validateMongDBId(id)
     try {
-        const updatedUser  = await User.findByIdAndUpdate(id, {
+        const updatedUser  = await User.findByIdAndUpdate(_id, {
             firstname : req.body?.firstname,
             lastname : req.body?.lastname,
             email : req.body?.email,
@@ -70,6 +72,7 @@ const getAllUsers = asyncHandler ( async (req , res) => {
 // get a single user
 const getaUser = asyncHandler(async ( req , res) => {
     const {id} = req.params;
+    validateMongDBId(id)
     try {
         const  getaUser = await User.findById(id);
         res.json(getaUser)
@@ -82,6 +85,8 @@ const getaUser = asyncHandler(async ( req , res) => {
 // delete a single user
 const deleteaUser = asyncHandler(async ( req , res) => {
     const {id} = req.params;
+    validateMongDBId(id)
+
     try {
         const  deleteaUser = await User.findByIdAndDelete(id);
         res.json(deleteaUser)
@@ -90,5 +95,51 @@ const deleteaUser = asyncHandler(async ( req , res) => {
     }
 })
 
+const blockUser = asyncHandler(async(req , res) => {
+    const {id} = req.params;
+    validateMongDBId(id)
+    try {
+        const block = await User.findByIdAndUpdate(
+            id,
+            {
+                isBlocked: true,
+            },
+            {
+                new : true
+            }
+        );
+        res.json({
+            message : "User Blocked",
+          
+        })
+    } catch (error) {
+        throw new Error(error)
+    }
+})
 
-module.exports = {createUser, loginUserCtrl, getAllUsers, getaUser, deleteaUser, updateaUser}
+
+const unblockUser = asyncHandler(async(req , res) => {
+    const {id} = req.params;
+    validateMongDBId(id)
+
+
+    try {
+        const unblock = await User.findByIdAndUpdate(
+            id,
+            {
+                isBlocked: false,
+            },
+            {
+                new : true
+            }
+        );
+        res.json({
+            message : "User UnBlocked"
+        })
+    } catch (error) {
+        throw new Error(error)
+    }
+})
+
+
+module.exports = {createUser, loginUserCtrl, getAllUsers, getaUser, deleteaUser, updateaUser, blockUser, unblockUser}
